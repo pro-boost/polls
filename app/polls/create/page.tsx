@@ -1,20 +1,93 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { ArrowLeft, Plus, X } from "lucide-react"
+import { ProtectedRoute } from "@/components/auth/protected-route"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 
-export default function CreatePollPage() {
+function CreatePollPageContent() {
+  const router = useRouter()
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")
+  const [options, setOptions] = useState(["Option 1", "Option 2", ""])
+  const [allowMultiple, setAllowMultiple] = useState(false)
+  const [showResults, setShowResults] = useState(true)
+  const [requireAuth, setRequireAuth] = useState(true)
+  const [endDate, setEndDate] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const addOption = () => {
+    setOptions([...options, ""])
+  }
+
+  const removeOption = (index: number) => {
+    if (options.length > 2) {
+      setOptions(options.filter((_, i) => i !== index))
+    }
+  }
+
+  const updateOption = (index: number, value: string) => {
+    const newOptions = [...options]
+    newOptions[index] = value
+    setOptions(newOptions)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!title.trim()) {
+      alert("Please enter a poll title")
+      return
+    }
+
+    const validOptions = options.filter(option => option.trim() !== "")
+    if (validOptions.length < 2) {
+      alert("Please provide at least 2 options")
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      // Here you would typically send the data to your API
+      const pollData = {
+        title: title.trim(),
+        description: description.trim(),
+        options: validOptions,
+        allowMultiple,
+        showResults,
+        requireAuth,
+        endDate: endDate || null
+      }
+
+      console.log("Creating poll:", pollData)
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      alert("Poll created successfully!")
+      router.push("/polls")
+    } catch (error) {
+      console.error("Error creating poll:", error)
+      alert("Failed to create poll. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="mb-6">
-        <Link href="/polls" className="flex items-center gap-2 text-blue-600 hover:underline mb-4">
+    <div className="create-poll-page">
+      <div className="create-poll-header">
+        <Link href="/polls" className="create-poll-back-link">
           <ArrowLeft className="h-4 w-4" />
           Back to Polls
         </Link>
-        <h1 className="text-3xl font-bold">Create New Poll</h1>
-        <p className="text-gray-600 mt-2">Create a poll to gather opinions from the community</p>
+        <h1 className="create-poll-title">Create New Poll</h1>
+        <p className="create-poll-subtitle">Create a poll to gather opinions from the community</p>
       </div>
 
       <Card>
@@ -24,113 +97,143 @@ export default function CreatePollPage() {
             Fill in the information below to create your poll
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="title">Poll Title *</Label>
-            <Input
-              id="title"
-              placeholder="Enter a clear and concise title for your poll"
-              required
-            />
-          </div>
+        <CardContent className="create-poll-content">
+          <form onSubmit={handleSubmit}>
+            <div className="form-field">
+              <Label htmlFor="title">Poll Title *</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter a clear and concise title for your poll"
+                required
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <textarea
-              id="description"
-              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Provide additional context or details about your poll (optional)"
-            />
-          </div>
+            <div className="form-field">
+              <Label htmlFor="description">Description</Label>
+              <textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="textarea"
+                placeholder="Provide additional context or details about your poll (optional)"
+              />
+            </div>
 
-          <div className="space-y-4">
-            <Label>Poll Options *</Label>
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <Input placeholder="Option 1" required />
-                <Button variant="outline" size="icon" disabled>
-                  <X className="h-4 w-4" />
-                </Button>
+            <div className="poll-options-section">
+              <Label>Poll Options *</Label>
+              <div className="poll-options-list">
+                {options.map((option, index) => (
+                  <div key={index} className="poll-option-row">
+                    <Input
+                      value={option}
+                      onChange={(e) => updateOption(index, e.target.value)}
+                      placeholder={`Option ${index + 1}`}
+                      required={index < 2}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => removeOption(index)}
+                      disabled={options.length <= 2}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
               </div>
-              <div className="flex gap-2">
-                <Input placeholder="Option 2" required />
-                <Button variant="outline" size="icon" disabled>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex gap-2">
-                <Input placeholder="Option 3" />
-                <Button variant="outline" size="icon">
-                  <X className="h-4 w-4" />
-                </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="add-option-btn"
+                onClick={addOption}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Another Option
+              </Button>
+            </div>
+
+            <div className="poll-settings-section">
+              <Label>Poll Settings</Label>
+              <div className="poll-settings-list">
+                <div className="poll-setting-item">
+                  <input
+                    type="checkbox"
+                    id="allowMultiple"
+                    className="checkbox"
+                    checked={allowMultiple}
+                    onChange={(e) => setAllowMultiple(e.target.checked)}
+                  />
+                  <Label htmlFor="allowMultiple" className="checkbox-label">
+                    Allow multiple selections
+                  </Label>
+                </div>
+                <div className="poll-setting-item">
+                  <input
+                    type="checkbox"
+                    id="showResults"
+                    className="checkbox"
+                    checked={showResults}
+                    onChange={(e) => setShowResults(e.target.checked)}
+                  />
+                  <Label htmlFor="showResults" className="checkbox-label">
+                    Show results after voting
+                  </Label>
+                </div>
+                <div className="poll-setting-item">
+                  <input
+                    type="checkbox"
+                    id="requireAuth"
+                    className="checkbox"
+                    checked={requireAuth}
+                    onChange={(e) => setRequireAuth(e.target.checked)}
+                  />
+                  <Label htmlFor="requireAuth" className="checkbox-label">
+                    Require authentication to vote
+                  </Label>
+                </div>
               </div>
             </div>
-            <Button variant="outline" className="w-full">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Another Option
-            </Button>
-          </div>
 
-          <div className="space-y-4">
-            <Label>Poll Settings</Label>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="allowMultiple"
-                  className="rounded border-gray-300"
-                />
-                <Label htmlFor="allowMultiple" className="text-sm font-normal">
-                  Allow multiple selections
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="showResults"
-                  className="rounded border-gray-300"
-                  defaultChecked
-                />
-                <Label htmlFor="showResults" className="text-sm font-normal">
-                  Show results after voting
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="requireAuth"
-                  className="rounded border-gray-300"
-                  defaultChecked
-                />
-                <Label htmlFor="requireAuth" className="text-sm font-normal">
-                  Require authentication to vote
-                </Label>
-              </div>
+            <div className="form-field">
+              <Label htmlFor="endDate">End Date (Optional)</Label>
+              <Input
+                id="endDate"
+                type="datetime-local"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="date-input"
+              />
+              <p className="field-hint">
+                Leave empty for polls that never expire
+              </p>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="endDate">End Date (Optional)</Label>
-            <Input
-              id="endDate"
-              type="datetime-local"
-              className="w-full"
-            />
-            <p className="text-xs text-gray-500">
-              Leave empty for polls that never expire
-            </p>
-          </div>
-
-          <div className="flex gap-3 pt-4">
-            <Button className="flex-1">
-              Create Poll
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/polls">Cancel</Link>
-            </Button>
-          </div>
+            <div className="form-actions">
+              <Button 
+                type="submit" 
+                className="create-btn"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Creating..." : "Create Poll"}
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/polls">Cancel</Link>
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function CreatePollPage() {
+  return (
+    <ProtectedRoute>
+      <CreatePollPageContent />
+    </ProtectedRoute>
   )
 }

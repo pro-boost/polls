@@ -3,43 +3,43 @@ import { Github, Twitter, Mail } from "lucide-react"
 
 export function Footer() {
   return (
-    <footer className="bg-gray-50 border-t mt-auto">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="footer">
+      <div className="footer-container">
+        <div className="footer-grid">
           {/* Brand */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-                <span className="text-white font-bold text-sm">P</span>
+          <div className="footer-brand">
+            <div className="footer-brand-header">
+              <div className="footer-logo">
+                <span className="footer-logo-text">P</span>
               </div>
-              <span className="font-bold text-lg">Polls</span>
+              <span className="footer-brand-name">Polls</span>
             </div>
-            <p className="text-gray-600 text-sm">
+            <p className="footer-description">
               Create and participate in polls to gather opinions and make decisions together.
             </p>
           </div>
 
           {/* Product */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Product</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="footer-section-title">Product</h3>
+            <ul className="footer-links">
               <li>
-                <Link href="/polls" className="text-gray-600 hover:text-gray-900">
+                <Link href="/polls" className="footer-link">
                   Browse Polls
                 </Link>
               </li>
               <li>
-                <Link href="/polls/create" className="text-gray-600 hover:text-gray-900">
+                <Link href="/polls/create" className="footer-link">
                   Create Poll
                 </Link>
               </li>
               <li>
-                <Link href="/features" className="text-gray-600 hover:text-gray-900">
+                <Link href="/features" className="footer-link">
                   Features
                 </Link>
               </li>
               <li>
-                <Link href="/pricing" className="text-gray-600 hover:text-gray-900">
+                <Link href="/pricing" className="footer-link">
                   Pricing
                 </Link>
               </li>
@@ -48,25 +48,25 @@ export function Footer() {
 
           {/* Support */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Support</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="footer-section-title">Support</h3>
+            <ul className="footer-links">
               <li>
-                <Link href="/help" className="text-gray-600 hover:text-gray-900">
+                <Link href="/help" className="footer-link">
                   Help Center
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-600 hover:text-gray-900">
+                <Link href="/contact" className="footer-link">
                   Contact Us
                 </Link>
               </li>
               <li>
-                <Link href="/docs" className="text-gray-600 hover:text-gray-900">
+                <Link href="/docs" className="footer-link">
                   Documentation
                 </Link>
               </li>
               <li>
-                <Link href="/status" className="text-gray-600 hover:text-gray-900">
+                <Link href="/status" className="footer-link">
                   Status
                 </Link>
               </li>
@@ -75,20 +75,20 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Legal</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="footer-section-title">Legal</h3>
+            <ul className="footer-links">
               <li>
-                <Link href="/privacy" className="text-gray-600 hover:text-gray-900">
+                <Link href="/privacy" className="footer-link">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-gray-600 hover:text-gray-900">
+                <Link href="/terms" className="footer-link">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/cookies" className="text-gray-600 hover:text-gray-900">
+                <Link href="/cookies" className="footer-link">
                   Cookie Policy
                 </Link>
               </li>
@@ -96,18 +96,18 @@ export function Footer() {
           </div>
         </div>
 
-        <hr className="my-8" />
+        <hr className="footer-divider" />
 
         {/* Bottom */}
-        <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <p className="text-gray-600 text-sm">
+        <div className="footer-bottom">
+          <p className="footer-copyright">
             © 2024 Polls. All rights reserved.
           </p>
-          
-          <div className="flex items-center space-x-4">
+           
+          <div className="footer-social">
             <a 
               href="https://github.com" 
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              className="footer-social-link"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -115,7 +115,7 @@ export function Footer() {
             </a>
             <a 
               href="https://twitter.com" 
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              className="footer-social-link"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -123,7 +123,7 @@ export function Footer() {
             </a>
             <a 
               href="mailto:contact@polls.com" 
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              className="footer-social-link"
             >
               <Mail className="h-5 w-5" />
             </a>

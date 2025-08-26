@@ -5,27 +5,27 @@ import { BarChart3, Users, Zap, Shield, ArrowRight } from "lucide-react"
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
+    <div className="home-page">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+      <section className="hero-section">
+        <div className="hero-container">
+          <h1 className="hero-title">
             Create & Share
-            <span className="text-blue-600 block">Polls Instantly</span>
+            <span className="hero-title-accent">Polls Instantly</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="hero-subtitle">
             Gather opinions, make decisions, and engage your community with beautiful, 
             easy-to-create polls that work on any device.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="hero-actions">
             <Link href="/polls/create">
-              <Button size="lg" className="text-lg px-8 py-3">
+              <Button size="lg" className="hero-btn-primary">
                 Create Your First Poll
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link href="/polls">
-              <Button variant="outline" size="lg" className="text-lg px-8 py-3">
+              <Button variant="outline" size="lg" className="hero-btn-secondary">
                 Browse Polls
               </Button>
             </Link>
@@ -34,21 +34,21 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <section className="features-section">
+        <div className="features-container">
+          <div className="features-header">
+            <h2 className="features-title">
               Why Choose Our Polling Platform?
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="features-subtitle">
               Built for simplicity, designed for engagement, and optimized for results.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <Card className="text-center">
+          <div className="features-grid">
+            <Card className="feature-card">
               <CardHeader>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="feature-icon feature-icon-blue">
                   <Zap className="h-6 w-6 text-blue-600" />
                 </div>
                 <CardTitle>Lightning Fast</CardTitle>
@@ -60,9 +60,9 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="text-center">
+            <Card className="feature-card">
               <CardHeader>
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="feature-icon feature-icon-green">
                   <Users className="h-6 w-6 text-green-600" />
                 </div>
                 <CardTitle>Community Driven</CardTitle>
@@ -74,9 +74,9 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="text-center">
+            <Card className="feature-card">
               <CardHeader>
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="feature-icon feature-icon-purple">
                   <BarChart3 className="h-6 w-6 text-purple-600" />
                 </div>
                 <CardTitle>Real-time Results</CardTitle>
@@ -88,9 +88,9 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            <Card className="text-center">
+            <Card className="feature-card">
               <CardHeader>
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <div className="feature-icon feature-icon-orange">
                   <Shield className="h-6 w-6 text-orange-600" />
                 </div>
                 <CardTitle>Secure & Private</CardTitle>
@@ -106,22 +106,22 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gray-50 py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+      <section className="cta-section">
+        <div className="cta-container">
+          <h2 className="cta-title">
             Ready to Get Started?
           </h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="cta-subtitle">
             Join thousands of users who are already creating engaging polls and gathering valuable insights.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="cta-actions">
             <Link href="/auth/register">
-              <Button size="lg" className="text-lg px-8 py-3">
+              <Button size="lg" className="cta-btn-primary">
                 Sign Up Free
               </Button>
             </Link>
             <Link href="/auth/login">
-              <Button variant="outline" size="lg" className="text-lg px-8 py-3">
+              <Button variant="outline" size="lg" className="cta-btn-secondary">
                 Sign In
               </Button>
             </Link>

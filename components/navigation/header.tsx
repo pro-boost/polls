@@ -3,56 +3,58 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { User, LogOut, Settings, Plus } from "lucide-react"
-
-// Mock authentication state - in a real app, this would come from context/state management
-const mockUser = {
-  name: "John Doe",
-  email: "john@example.com",
-  isAuthenticated: true // Change to true to see authenticated state
-}
+import { useAuth } from "@/contexts/auth-context"
 
 export function Header() {
+  const { user, signOut } = useAuth()
+
+  const handleSignOut = async () => {
+    await signOut()
+  }
+
   return (
-    <header className="border-b bg-white">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <header className="header">
+      <div className="header-container">
+        <div className="header-content">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">P</span>
+          <Link href="/" className="header-logo">
+            <div className="header-logo-icon">
+              <span className="header-logo-text">P</span>
             </div>
-            <span className="font-bold text-xl">Polls</span>
+            <span className="header-brand">Polls</span>
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="header-nav">
             <Link 
               href="/polls" 
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              className="header-nav-link"
             >
               Browse Polls
             </Link>
-            <Link 
-              href="/polls/create" 
-              className="text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Create Poll
-            </Link>
+            {user && (
+              <Link 
+                href="/polls/create" 
+                className="header-nav-link"
+              >
+                Create Poll
+              </Link>
+            )}
           </nav>
 
           {/* User Actions */}
-          <div className="flex items-center space-x-4">
-            {mockUser.isAuthenticated ? (
+          <div className="header-actions">
+            {user ? (
               <>
                 {/* Mobile Create Button */}
-                <Link href="/polls/create" className="md:hidden">
+                <Link href="/polls/create" className="header-mobile-create">
                   <Button size="sm" variant="outline">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </Link>
-                
+                 
                 {/* Desktop Create Button */}
-                <Link href="/polls/create" className="hidden md:block">
+                <Link href="/polls/create" className="header-desktop-create">
                   <Button size="sm">
                     <Plus className="h-4 w-4 mr-2" />
                     Create Poll
@@ -60,36 +62,35 @@ export function Header() {
                 </Link>
 
                 {/* User Menu */}
-                <div className="relative group">
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                <div className="header-user-menu">
+                  <Button variant="ghost" size="sm" className="header-user-button">
                     <User className="h-4 w-4" />
-                    <span className="hidden md:block">{mockUser.name}</span>
+                    <span className="header-user-name">
+                      {user.user_metadata?.full_name || user.email}
+                    </span>
                   </Button>
-                  
+                   
                   {/* Dropdown Menu - In a real app, you'd use a proper dropdown component */}
-                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                    <div className="py-2">
+                  <div className="header-dropdown">
+                    <div className="header-dropdown-content">
                       <Link 
                         href="/profile" 
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="header-dropdown-item"
                       >
                         <User className="h-4 w-4 mr-2" />
                         Profile
                       </Link>
                       <Link 
                         href="/settings" 
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="header-dropdown-item"
                       >
                         <Settings className="h-4 w-4 mr-2" />
                         Settings
                       </Link>
-                      <hr className="my-1" />
+                      <hr className="header-dropdown-divider" />
                       <button 
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => {
-                          // TODO: Implement logout
-                          console.log('Logout clicked')
-                        }}
+                        className="header-dropdown-item"
+                        onClick={handleSignOut}
                       >
                         <LogOut className="h-4 w-4 mr-2" />
                         Sign Out

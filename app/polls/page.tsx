@@ -33,30 +33,30 @@ const mockPolls = [
 
 export default function PollsPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="polls-page">
+      <div className="polls-header">
         <div>
-          <h1 className="text-3xl font-bold">Polls</h1>
-          <p className="text-gray-600 mt-2">Discover and participate in community polls</p>
+          <h1 className="polls-title">Polls</h1>
+          <p className="polls-subtitle">Discover and participate in community polls</p>
         </div>
         <Link href="/polls/create">
-          <Button className="flex items-center gap-2">
+          <Button className="polls-create-btn">
             <Plus className="h-4 w-4" />
             Create Poll
           </Button>
         </Link>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="polls-grid">
         {mockPolls.map((poll) => (
-          <Card key={poll.id} className="hover:shadow-lg transition-shadow">
+          <Card key={poll.id} className="poll-card">
             <CardHeader>
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-lg">{poll.title}</CardTitle>
-                <span className={`px-2 py-1 rounded-full text-xs ${
+              <div className="poll-card-header">
+                <CardTitle className="poll-card-title">{poll.title}</CardTitle>
+                <span className={`poll-status ${
                   poll.isActive 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-gray-100 text-gray-800'
+                    ? 'poll-status-active' 
+                    : 'poll-status-closed'
                 }`}>
                   {poll.isActive ? 'Active' : 'Closed'}
                 </span>
@@ -64,18 +64,18 @@ export default function PollsPage() {
               <CardDescription>{poll.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                <div className="flex items-center gap-1">
+              <div className="poll-meta">
+                <div className="poll-meta-item">
                   <Users className="h-4 w-4" />
                   {poll.totalVotes} votes
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="poll-meta-item">
                   <Clock className="h-4 w-4" />
                   {poll.createdAt}
                 </div>
               </div>
               <Link href={`/polls/${poll.id}`}>
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="poll-action-btn">
                   {poll.isActive ? 'Vote Now' : 'View Results'}
                 </Button>
               </Link>
@@ -85,9 +85,9 @@ export default function PollsPage() {
       </div>
 
       {mockPolls.length === 0 && (
-        <div className="text-center py-12">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No polls yet</h3>
-          <p className="text-gray-500 mb-4">Be the first to create a poll!</p>
+        <div className="polls-empty">
+          <h3 className="polls-empty-title">No polls yet</h3>
+          <p className="polls-empty-subtitle">Be the first to create a poll!</p>
           <Link href="/polls/create">
             <Button>
               <Plus className="h-4 w-4 mr-2" />

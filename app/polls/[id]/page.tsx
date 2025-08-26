@@ -42,31 +42,31 @@ export default function PollPage({ params }: PollPageProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-6">
-        <Link href="/polls" className="flex items-center gap-2 text-blue-600 hover:underline mb-4">
+    <div className="poll-detail-page">
+      <div className="poll-detail-header">
+        <Link href="/polls" className="poll-detail-back-link">
           <ArrowLeft className="h-4 w-4" />
           Back to Polls
         </Link>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="poll-detail-grid">
         {/* Main Poll Content */}
-        <div className="lg:col-span-2">
+        <div className="poll-detail-main">
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <CardTitle className="text-2xl mb-2">{poll.title}</CardTitle>
-                  <CardDescription className="text-base">
+              <div className="poll-detail-card-header">
+                <div className="poll-detail-info">
+                  <CardTitle className="poll-detail-title">{poll.title}</CardTitle>
+                  <CardDescription className="poll-detail-description">
                     {poll.description}
                   </CardDescription>
                 </div>
-                <div className="flex gap-2">
-                  <span className={`px-3 py-1 rounded-full text-sm ${
+                <div className="poll-detail-status">
+                  <span className={`poll-status ${
                     poll.isActive 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
+                      ? 'poll-status-active' 
+                      : 'poll-status-closed'
                   }`}>
                     {poll.isActive ? 'Active' : 'Closed'}
                   </span>
@@ -74,30 +74,30 @@ export default function PollPage({ params }: PollPageProps) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="poll-options">
                 {poll.options.map((option) => (
-                  <div key={option.id} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <label className="flex items-center space-x-3 cursor-pointer flex-1">
+                  <div key={option.id} className="poll-option">
+                    <div className="poll-option-header">
+                      <label className="poll-option-label">
                         <input
                           type={poll.allowMultiple ? "checkbox" : "radio"}
                           name="poll-option"
                           value={option.id}
-                          className="w-4 h-4"
+                          className="poll-option-input"
                           disabled={!poll.isActive || poll.hasVoted}
                         />
-                        <span className="text-sm font-medium">{option.text}</span>
+                        <span className="poll-option-text">{option.text}</span>
                       </label>
                       {poll.showResults && (
-                        <span className="text-sm text-gray-500">
+                        <span className="poll-option-votes">
                           {option.votes} votes ({option.percentage}%)
                         </span>
                       )}
                     </div>
                     {poll.showResults && (
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="poll-progress-bar">
                         <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                          className="poll-progress-fill"
                           style={{ width: `${option.percentage}%` }}
                         />
                       </div>
@@ -107,17 +107,17 @@ export default function PollPage({ params }: PollPageProps) {
               </div>
 
               {poll.isActive && !poll.hasVoted && (
-                <div className="mt-6 pt-4 border-t">
-                  <Button className="w-full">
+                <div className="poll-submit-section">
+                  <Button className="poll-submit-btn">
                     Submit Vote
                   </Button>
                 </div>
               )}
 
               {poll.hasVoted && (
-                <div className="mt-6 pt-4 border-t">
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <p className="text-green-800 text-sm font-medium">
+                <div className="poll-voted-section">
+                  <div className="poll-voted-message">
+                    <p className="poll-voted-text">
                       ✓ Thank you for voting! Your response has been recorded.
                     </p>
                   </div>
@@ -128,39 +128,39 @@ export default function PollPage({ params }: PollPageProps) {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="poll-detail-sidebar">
           {/* Poll Stats */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Poll Statistics</CardTitle>
+              <CardTitle className="poll-stats-title">Poll Statistics</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
+            <CardContent className="poll-stats-content">
+              <div className="poll-stat-item">
                 <Users className="h-5 w-5 text-gray-500" />
                 <div>
-                  <p className="font-medium">{poll.totalVotes}</p>
-                  <p className="text-sm text-gray-500">Total Votes</p>
+                  <p className="poll-stat-value">{poll.totalVotes}</p>
+                  <p className="poll-stat-label">Total Votes</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="poll-stat-item">
                 <Clock className="h-5 w-5 text-gray-500" />
                 <div>
-                  <p className="font-medium">{poll.createdAt}</p>
-                  <p className="text-sm text-gray-500">Created</p>
+                  <p className="poll-stat-value">{poll.createdAt}</p>
+                  <p className="poll-stat-label">Created</p>
                 </div>
               </div>
               {poll.endDate && (
-                <div className="flex items-center gap-3">
+                <div className="poll-stat-item">
                   <Clock className="h-5 w-5 text-gray-500" />
                   <div>
-                    <p className="font-medium">{poll.endDate}</p>
-                    <p className="text-sm text-gray-500">Ends</p>
+                    <p className="poll-stat-value">{poll.endDate}</p>
+                    <p className="poll-stat-label">Ends</p>
                   </div>
                 </div>
               )}
-              <div className="pt-2">
-                <p className="text-sm text-gray-500">Created by</p>
-                <p className="font-medium">{poll.creator}</p>
+              <div className="poll-creator">
+                <p className="poll-creator-label">Created by</p>
+                <p className="poll-creator-name">{poll.creator}</p>
               </div>
             </CardContent>
           </Card>
@@ -168,10 +168,10 @@ export default function PollPage({ params }: PollPageProps) {
           {/* Share Poll */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Share Poll</CardTitle>
+              <CardTitle className="poll-share-title">Share Poll</CardTitle>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="poll-share-btn">
                 <Share2 className="h-4 w-4 mr-2" />
                 Share Poll
               </Button>
