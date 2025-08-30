@@ -1,44 +1,100 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { ArrowLeft, Users, Clock, Share2 } from "lucide-react"
-import { notFound } from "next/navigation"
+"use client";
 
-// Mock data for demonstration
-const mockPoll = {
-  id: "1",
-  title: "Favorite Programming Language",
-  description: "What's your preferred programming language for web development? This poll will help us understand the community preferences.",
-  options: [
-    { id: "1", text: "JavaScript", votes: 45, percentage: 35.7 },
-    { id: "2", text: "Python", votes: 38, percentage: 30.2 },
-    { id: "3", text: "TypeScript", votes: 25, percentage: 19.8 },
-    { id: "4", text: "Go", votes: 12, percentage: 9.5 },
-    { id: "5", text: "Rust", votes: 6, percentage: 4.8 }
-  ],
-  totalVotes: 126,
-  createdAt: "2024-01-15",
-  endDate: "2024-02-15",
-  isActive: true,
-  allowMultiple: false,
-  showResults: true,
-  hasVoted: false,
-  creator: "John Doe"
-}
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ArrowLeft, Users, Clock, Share2 } from "lucide-react";
+import { notFound } from "next/navigation";
+import { getPollWithOptions } from "@/lib/api";
+import { VotingForm } from "@/components/polls/voting-form";
 
 interface PollPageProps {
-  params: {
-    id: string
-  }
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+interface PollData {
+  poll: {
+    id: string;
+    title: string;
+    description?: string;
+    is_active: boolean;
+    created_at: string;
+    expires_at?: string;
+    allow_multiple_votes: boolean;
+  };
+  options: Array<{
+    id: string;
+    option_text: string;
+    option_order: number;
+  }>;
+  total_votes: number;
 }
 
 export default function PollPage({ params }: PollPageProps) {
-  // In a real app, you would fetch the poll data based on params.id
-  const _pollId = params.id
-  const poll = mockPoll // Using mock data for now, but _pollId would be used for fetching
-  
+  const [poll, setPoll] = useState<PollData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [hasVoted, setHasVoted] = useState(false);
+
+  /**
+   * Fetch poll data on component mount
+   */
+  useEffect(() => {
+    const fetchPoll = async () => {
+      try {
+        const resolvedParams = await params;
+        const pollResult = await getPollWithOptions(resolvedParams.id);
+
+        if (!pollResult.success || !pollResult.data) {
+          notFound();
+          return;
+        }
+
+        setPoll(pollResult.data);
+      } catch (error) {
+        console.error("Error fetching poll:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPoll();
+  }, [params]);
+
+  /**
+   * Handle successful vote submission
+   */
+  const handleVoteSubmitted = () => {
+    setHasVoted(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="poll-detail-page">
+        <div className="poll-detail-header">
+          <Link href="/polls" className="poll-detail-back-link">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Polls
+          </Link>
+        </div>
+        <div className="loading-message">
+          <p>Loading poll...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!poll) {
-    notFound()
+    notFound();
+    return null;
   }
 
   return (
@@ -52,74 +108,51 @@ export default function PollPage({ params }: PollPageProps) {
 
       <div className="poll-detail-grid">
         {/* Main Poll Content */}
-        <div className="poll-detail-main">
-          <Card>
-            <CardHeader>
-              <div className="poll-detail-card-header">
-                <div className="poll-detail-info">
-                  <CardTitle className="poll-detail-title">{poll.title}</CardTitle>
-                  <CardDescription className="poll-detail-description">
-                    {poll.description}
+        <div className="poll-detail-main space-y-6">
+          <Card className="p-2">
+            <CardHeader className="space-y-4">
+              <div className="poll-detail-card-header space-y-3">
+                <div className="poll-detail-info space-y-2">
+                  <CardTitle className="poll-detail-title text-2xl">
+                    {poll.poll.title}
+                  </CardTitle>
+                  <CardDescription className="poll-detail-description text-base">
+                    {poll.poll.description || "No description provided"}
                   </CardDescription>
                 </div>
-                <div className="poll-detail-status">
-                  <span className={`poll-status ${
-                    poll.isActive 
-                      ? 'poll-status-active' 
-                      : 'poll-status-closed'
-                  }`}>
-                    {poll.isActive ? 'Active' : 'Closed'}
+                <div className="poll-detail-status pt-2">
+                  <span
+                    className={`poll-status px-3 py-1 rounded-full ${
+                      poll.poll.is_active
+                        ? "poll-status-active bg-green-100 text-green-800"
+                        : "poll-status-closed bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {poll.poll.is_active ? "Active" : "Closed"}
                   </span>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="poll-options">
-                {poll.options.map((option) => (
-                  <div key={option.id} className="poll-option">
-                    <div className="poll-option-header">
-                      <label className="poll-option-label">
-                        <input
-                          type={poll.allowMultiple ? "checkbox" : "radio"}
-                          name="poll-option"
-                          value={option.id}
-                          className="poll-option-input"
-                          disabled={!poll.isActive || poll.hasVoted}
-                        />
-                        <span className="poll-option-text">{option.text}</span>
-                      </label>
-                      {poll.showResults && (
-                        <span className="poll-option-votes">
-                          {option.votes} votes ({option.percentage}%)
-                        </span>
-                      )}
-                    </div>
-                    {poll.showResults && (
-                      <div className="poll-progress-bar">
-                        <div
-                          className="poll-progress-fill"
-                          style={{ width: `${option.percentage}%` }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {poll.isActive && !poll.hasVoted && (
-                <div className="poll-submit-section">
-                  <Button className="poll-submit-btn">
-                    Submit Vote
-                  </Button>
-                </div>
-              )}
-
-              {poll.hasVoted && (
-                <div className="poll-voted-section">
-                  <div className="poll-voted-message">
-                    <p className="poll-voted-text">
+            <CardContent className="pt-6 space-y-8">
+              {!hasVoted ? (
+                <VotingForm
+                  pollId={poll.poll.id}
+                  options={poll.options}
+                  allowMultiple={poll.poll.allow_multiple_votes || false}
+                  isActive={poll.poll.is_active}
+                  onVoteSubmitted={handleVoteSubmitted}
+                />
+              ) : (
+                <div className="poll-voted-section py-8">
+                  <div className="poll-voted-message space-y-6">
+                    <p className="poll-voted-text text-lg font-medium text-green-700">
                       ✓ Thank you for voting! Your response has been recorded.
                     </p>
+                    <div className="poll-results-preview mt-8">
+                      <p className="text-sm text-gray-600">
+                        Results will be available after the poll closes.
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -132,36 +165,40 @@ export default function PollPage({ params }: PollPageProps) {
           {/* Poll Stats */}
           <Card>
             <CardHeader>
-              <CardTitle className="poll-stats-title">Poll Statistics</CardTitle>
+              <CardTitle className="poll-stats-title">
+                Poll Statistics
+              </CardTitle>
             </CardHeader>
             <CardContent className="poll-stats-content">
               <div className="poll-stat-item">
                 <Users className="h-5 w-5 text-gray-500" />
                 <div>
-                  <p className="poll-stat-value">{poll.totalVotes}</p>
+                  <p className="poll-stat-value">{poll.total_votes || 0}</p>
                   <p className="poll-stat-label">Total Votes</p>
                 </div>
               </div>
               <div className="poll-stat-item">
                 <Clock className="h-5 w-5 text-gray-500" />
                 <div>
-                  <p className="poll-stat-value">{poll.createdAt}</p>
+                  <p className="poll-stat-value">
+                    {poll.poll.created_at
+                      ? new Date(poll.poll.created_at).toLocaleDateString()
+                      : "Unknown"}
+                  </p>
                   <p className="poll-stat-label">Created</p>
                 </div>
               </div>
-              {poll.endDate && (
+              {poll.poll.expires_at && (
                 <div className="poll-stat-item">
                   <Clock className="h-5 w-5 text-gray-500" />
                   <div>
-                    <p className="poll-stat-value">{poll.endDate}</p>
+                    <p className="poll-stat-value">
+                      {new Date(poll.poll.expires_at).toLocaleDateString()}
+                    </p>
                     <p className="poll-stat-label">Ends</p>
                   </div>
                 </div>
               )}
-              <div className="poll-creator">
-                <p className="poll-creator-label">Created by</p>
-                <p className="poll-creator-name">{poll.creator}</p>
-              </div>
             </CardContent>
           </Card>
 
@@ -180,5 +217,5 @@ export default function PollPage({ params }: PollPageProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

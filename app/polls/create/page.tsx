@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { ArrowLeft, Plus, X } from "lucide-react"
 import { ProtectedRoute } from "@/components/auth/protected-route"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { createPollAction } from "@/lib/actions/poll-actions"
 
 function CreatePollPageContent() {
   const router = useRouter()
@@ -20,6 +21,9 @@ function CreatePollPageContent() {
   const [requireAuth, setRequireAuth] = useState(true)
   const [endDate, setEndDate] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const addOption = () => {
     setOptions([...options, ""])
@@ -40,41 +44,54 @@ function CreatePollPageContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    // Validate form
     if (!title.trim()) {
-      alert("Please enter a poll title")
+      setError("Please enter a poll title")
       return
     }
 
     const validOptions = options.filter(option => option.trim() !== "")
     if (validOptions.length < 2) {
-      alert("Please provide at least 2 options")
+      setError("Please provide at least 2 options")
       return
     }
 
     setIsSubmitting(true)
+    setError(null)
 
     try {
-      // Here you would typically send the data to your API
-      const pollData = {
-        title: title.trim(),
-        description: description.trim(),
-        options: validOptions,
-        allowMultiple,
-        showResults,
-        requireAuth,
-        endDate: endDate || null
-      }
+      // Create FormData for Server Action
+      const formData = new FormData()
+      formData.append('title', title.trim())
+      formData.append('description', description.trim())
+      formData.append('allowMultiple', allowMultiple.toString())
+      formData.append('requireAuth', requireAuth.toString())
+      formData.append('endDate', endDate || '')
+      
+      // Add options to FormData
+      validOptions.forEach((option, index) => {
+        formData.append(`option-${index}`, option.trim())
+      })
 
-      console.log("Creating poll:", pollData)
+      // Call Server Action
+      const result = await createPollAction(formData)
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      if (result && !result.success) {
+        setError(result.error || 'Failed to create poll')
+      } else if (result && result.success) {
+        // Show success message
+        setSuccessMessage(result.message || 'Poll created successfully!')
+        setError(null)
+        
+        // Redirect to polls page after a short delay to show the success message
+        setTimeout(() => {
+          router.push('/polls')
+        }, 2000)
+      }
       
-      alert("Poll created successfully!")
-      router.push("/polls")
     } catch (error) {
       console.error("Error creating poll:", error)
-      alert("Failed to create poll. Please try again.")
+      setError("Failed to create poll. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -98,7 +115,17 @@ function CreatePollPageContent() {
           </CardDescription>
         </CardHeader>
         <CardContent className="create-poll-content">
-          <form onSubmit={handleSubmit}>
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+          {successMessage && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-green-600 text-sm">{successMessage}</p>
+            </div>
+          )}
+          <form ref={formRef} onSubmit={handleSubmit}>
             <div className="form-field">
               <Label htmlFor="title">Poll Title *</Label>
               <Input
@@ -215,9 +242,9 @@ function CreatePollPageContent() {
               <Button 
                 type="submit" 
                 className="create-btn"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !!successMessage}
               >
-                {isSubmitting ? "Creating..." : "Create Poll"}
+                {isSubmitting ? "Creating..." : successMessage ? "Redirecting..." : "Create Poll"}
               </Button>
               <Button variant="outline" asChild>
                 <Link href="/polls">Cancel</Link>

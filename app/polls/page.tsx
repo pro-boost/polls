@@ -2,36 +2,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Plus, Users, Clock } from "lucide-react"
+import { getPolls } from "@/lib/api"
 
-// Mock data for demonstration
-const mockPolls = [
-  {
-    id: "1",
-    title: "Favorite Programming Language",
-    description: "What's your preferred programming language for web development?",
-    totalVotes: 156,
-    createdAt: "2024-01-15",
-    isActive: true
-  },
-  {
-    id: "2",
-    title: "Best Time for Team Meetings",
-    description: "When should we schedule our weekly team meetings?",
-    totalVotes: 23,
-    createdAt: "2024-01-14",
-    isActive: true
-  },
-  {
-    id: "3",
-    title: "Office Lunch Options",
-    description: "Which restaurant should we order from for the team lunch?",
-    totalVotes: 45,
-    createdAt: "2024-01-13",
-    isActive: false
-  }
-]
-
-export default function PollsPage() {
+export default async function PollsPage() {
+  const pollsResult = await getPolls()
+  const polls = pollsResult.success ? (pollsResult.data || []) : []
   return (
     <div className="polls-page">
       <div className="polls-header">
@@ -48,35 +23,35 @@ export default function PollsPage() {
       </div>
 
       <div className="polls-grid">
-        {mockPolls.map((poll) => (
+        {polls.map((poll) => (
           <Card key={poll.id} className="poll-card">
             <CardHeader>
               <div className="poll-card-header">
                 <CardTitle className="poll-card-title">{poll.title}</CardTitle>
                 <span className={`poll-status ${
-                  poll.isActive 
+                  poll.is_active 
                     ? 'poll-status-active' 
                     : 'poll-status-closed'
                 }`}>
-                  {poll.isActive ? 'Active' : 'Closed'}
+                  {poll.is_active ? 'Active' : 'Closed'}
                 </span>
               </div>
-              <CardDescription>{poll.description}</CardDescription>
+              <CardDescription>{poll.description || 'No description provided'}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="poll-meta">
                 <div className="poll-meta-item">
                   <Users className="h-4 w-4" />
-                  {poll.totalVotes} votes
+                  {poll.vote_count || 0} votes
                 </div>
                 <div className="poll-meta-item">
                   <Clock className="h-4 w-4" />
-                  {poll.createdAt}
+                  {poll.created_at ? new Date(poll.created_at).toLocaleDateString() : 'Unknown date'}
                 </div>
               </div>
               <Link href={`/polls/${poll.id}`}>
                 <Button variant="outline" className="poll-action-btn">
-                  {poll.isActive ? 'Vote Now' : 'View Results'}
+                  {poll.is_active ? 'Vote Now' : 'View Results'}
                 </Button>
               </Link>
             </CardContent>
@@ -84,7 +59,7 @@ export default function PollsPage() {
         ))}
       </div>
 
-      {mockPolls.length === 0 && (
+      {polls.length === 0 && (
         <div className="polls-empty">
           <h3 className="polls-empty-title">No polls yet</h3>
           <p className="polls-empty-subtitle">Be the first to create a poll!</p>
