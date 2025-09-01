@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { User, LogOut, Settings, Plus } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { User, LogOut, Settings, Plus } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 
 export function Header() {
-  const { user, signOut } = useAuth()
+  const { user, signOut } = useAuth();
 
   const handleSignOut = async () => {
-    await signOut()
-  }
+    await signOut();
+  };
 
   return (
     <header className="header">
@@ -25,22 +25,6 @@ export function Header() {
           </Link>
 
           {/* Navigation */}
-          <nav className="header-nav">
-            <Link 
-              href="/polls" 
-              className="header-nav-link"
-            >
-              Browse Polls
-            </Link>
-            {user && (
-              <Link 
-                href="/polls/create" 
-                className="header-nav-link"
-              >
-                Create Poll
-              </Link>
-            )}
-          </nav>
 
           {/* User Actions */}
           <div className="header-actions">
@@ -52,7 +36,7 @@ export function Header() {
                     <Plus className="h-4 w-4" />
                   </Button>
                 </Link>
-                 
+
                 {/* Desktop Create Button */}
                 <Link href="/polls/create" className="header-desktop-create">
                   <Button size="sm">
@@ -63,32 +47,30 @@ export function Header() {
 
                 {/* User Menu */}
                 <div className="header-user-menu">
-                  <Button variant="ghost" size="sm" className="header-user-button">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="header-user-button"
+                  >
                     <User className="h-4 w-4" />
                     <span className="header-user-name">
                       {user.user_metadata?.full_name || user.email}
                     </span>
                   </Button>
-                   
+
                   {/* Dropdown Menu - In a real app, you'd use a proper dropdown component */}
                   <div className="header-dropdown">
                     <div className="header-dropdown-content">
-                      <Link 
-                        href="/profile" 
-                        className="header-dropdown-item"
-                      >
+                      <Link href="/profile" className="header-dropdown-item">
                         <User className="h-4 w-4 mr-2" />
                         Profile
                       </Link>
-                      <Link 
-                        href="/settings" 
-                        className="header-dropdown-item"
-                      >
+                      <Link href="/settings" className="header-dropdown-item">
                         <Settings className="h-4 w-4 mr-2" />
                         Settings
                       </Link>
                       <hr className="header-dropdown-divider" />
-                      <button 
+                      <button
                         className="header-dropdown-item"
                         onClick={handleSignOut}
                       >
@@ -107,9 +89,7 @@ export function Header() {
                   </Button>
                 </Link>
                 <Link href="/auth/register">
-                  <Button size="sm">
-                    Sign Up
-                  </Button>
+                  <Button size="sm">Sign Up</Button>
                 </Link>
               </>
             )}
@@ -117,5 +97,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
