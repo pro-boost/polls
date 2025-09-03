@@ -17,14 +17,17 @@ const mockEq = jest.fn()
 const mockSingle = jest.fn()
 const mockDelete = jest.fn()
 
+// Define a typed Supabase-like response to avoid using `any`
+type SupabaseResponse<T> = { data: T | null; error: { message: string } | null }
+
 // Create a mock that can be both awaited and chained
-const createAwaitableChainMock = (resolvedValue: any) => {
+const createAwaitableChainMock = <T>(resolvedValue: SupabaseResponse<T>) => {
   const chainMock = {
     select: jest.fn().mockReturnValue({
       single: mockSingle
     }),
-    then: (resolve: any) => resolve(resolvedValue),
-    catch: (reject: any) => Promise.resolve(resolvedValue)
+    then: (resolve: (value: SupabaseResponse<T>) => unknown) => resolve(resolvedValue),
+    catch: (_reject: (reason: unknown) => unknown) => Promise.resolve(resolvedValue)
   }
   return chainMock
 }
@@ -32,7 +35,7 @@ const createAwaitableChainMock = (resolvedValue: any) => {
 // Create comprehensive mock that handles all query patterns
 const createSupabaseTableMock = () => ({
   // For insert operations - can be chained with .select().single() or used directly
-   insert: mockInsert,
+  insert: mockInsert,
   // For select operations - chained with .eq().single() or .eq().eq().single()
   select: jest.fn().mockReturnValue({
     eq: jest.fn().mockReturnValue({
@@ -43,15 +46,22 @@ const createSupabaseTableMock = () => ({
     })
   }),
   // For delete operations - chained with .eq()
-  delete: jest.fn().mockReturnValue({
-    eq: mockEq
-  })
+  delete: () => {
+    mockDelete() // Track the call
+    return {
+      eq: mockEq
+    }
+  }
 })
 
 // Mock Supabase client with proper chaining
 const mockSupabaseClient = {
   from: jest.fn(() => createSupabaseTableMock())
 }
+
+// Derive the concrete Supabase client type that createServerSupabaseClient resolves to
+// This avoids importing Supabase types and keeps typing accurate to the app code
+type SupabaseClientType = Awaited<ReturnType<typeof createServerSupabaseClient>>
 
 // Mock user with proper Supabase User type structure
 const mockUser = {
@@ -81,12 +91,15 @@ describe('Poll Actions', () => {
     mockDelete.mockReset()
     
     // Configure mockInsert to handle both chained and direct calls
-    mockInsert.mockImplementation(() => createAwaitableChainMock({ data: null, error: null }))
+    mockInsert.mockImplementation(() => createAwaitableChainMock<{ id: string }>({ data: null, error: null }))
+    
+    // Configure mockEq to return a resolved promise for delete operations
+    mockEq.mockResolvedValue({ error: null })
     
     // Reset mock functions
     mockSupabaseClient.from.mockReturnValue(createSupabaseTableMock())
     
-    mockCreateServerSupabaseClient.mockResolvedValue(mockSupabaseClient)
+    mockCreateServerSupabaseClient.mockResolvedValue(mockSupabaseClient as unknown as SupabaseClientType)
   })
 
   describe('createPollAction', () => {
@@ -111,8 +124,12 @@ describe('Poll Actions', () => {
     it('should create a poll successfully with valid data', async () => {
       // Arrange
       mockGetCurrentUser.mockResolvedValue(mockUser)
-      mockInsert.mockResolvedValueOnce({ data: mockPoll, error: null })
-      mockInsert.mockResolvedValueOnce({ error: null })
+      // Mock poll creation (uses .insert().select().single())
+      mockSingle.mockResolvedValueOnce({ data: mockPoll, error: null })
+      // Mock options creation (direct insert) - need to call it twice, once for poll, once for options
+      mockInsert
+        .mockReturnValueOnce(createAwaitableChainMock({ data: mockPoll, error: null })) // Poll creation
+        .mockImplementationOnce(() => Promise.resolve({ data: null, error: null })) // Options creation
 
       const formData = createFormData({
         title: 'Test Poll',
@@ -184,7 +201,7 @@ describe('Poll Actions', () => {
       // Arrange
       mockGetCurrentUser.mockResolvedValue(mockUser)
       const pollError = { message: 'Database error' }
-      mockInsert.mockResolvedValue({ data: null, error: pollError })
+      mockSingle.mockResolvedValue({ data: null, error: pollError })
 
       const formData = createFormData({
         title: 'Test Poll',
@@ -205,10 +222,13 @@ describe('Poll Actions', () => {
       mockGetCurrentUser.mockResolvedValue(mockUser)
       const _optionsError = { message: 'Options error' }
       
-      // Mock successful poll creation, then failed options creation
+      // Mock successful poll creation
+      mockSingle.mockResolvedValueOnce({ data: mockPoll, error: null })
+      
+      // Mock poll and options creation
       mockInsert
-        .mockResolvedValueOnce({ data: mockPoll, error: null })
-        .mockResolvedValueOnce({ data: null, error: _optionsError })
+        .mockReturnValueOnce(createAwaitableChainMock({ data: mockPoll, error: null })) // Poll creation
+        .mockImplementationOnce(() => Promise.resolve({ data: null, error: _optionsError })) // Failed options creation
       
       // Mock cleanup delete
       mockDelete.mockResolvedValue({ error: null })
@@ -231,15 +251,19 @@ describe('Poll Actions', () => {
     it('should filter out empty options', async () => {
       // Arrange
       mockGetCurrentUser.mockResolvedValue(mockUser)
-      mockInsert.mockResolvedValueOnce({ data: mockPoll, error: null })
-      mockInsert.mockResolvedValueOnce({ error: null })
+      // Mock poll creation (uses .insert().select().single())
+      mockSingle.mockResolvedValueOnce({ data: mockPoll, error: null })
+      // Mock poll and options creation
+      mockInsert
+        .mockReturnValueOnce(createAwaitableChainMock({ data: mockPoll, error: null })) // Poll creation
+        .mockImplementationOnce(() => Promise.resolve({ data: null, error: null })) // Options creation
 
       const formData = createFormData({
         title: 'Test Poll',
         'option-0': 'Option 1',
-        'option-1': '',
+        'option-1': '', // Empty option
         'option-2': 'Option 2',
-        'option-3': '   '
+        'option-3': '   ' // Whitespace only
       })
 
       // Act
